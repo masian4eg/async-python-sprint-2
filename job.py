@@ -1,12 +1,41 @@
+from datetime import datetime
+from typing import Callable, Optional, Dict, Any, Generator
+
+
 class Job:
-    def __init__(self, start_at="", max_working_time=-1, tries=0, dependencies=[]):
-        pass
+    def __init__(self,
+                 task: Callable,
+                 task_str: str,
+                 start_at: datetime,
+                 tries: int = 0,
+                 dependencies: Optional[list[str]] = None):
 
-    def run(self):
-        pass
+        self.start_at = start_at
+        self.tries = tries
+        self.dependencies = dependencies if dependencies else None
+        self.task = task
+        self.task_str = task_str
+        self.actual_tries: int = 0
 
-    def pause(self):
-        pass
+    def run(self) -> Generator[None, None, None]:
+        if self.check_run():
+            self.task()
+            _ = (yield)
+            yield True
 
-    def stop(self):
-        pass
+    def dict(self) -> Dict[str, Any]:
+        return {
+            'task_str': self.task_str,
+            'start_at': self.start_at.timestamp(),
+            'tries': self.tries,
+            'dependencies': self.dependencies
+        }
+
+    def check_run(self) -> bool:
+        if datetime.now() < self.start_at:
+            return False
+        if self.dependencies:
+            return False
+        if self.actual_tries >= self.tries:
+            return False
+        return True
