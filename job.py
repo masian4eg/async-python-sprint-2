@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Callable, Optional, Dict, Any, Generator
+from typing import Callable, Optional, Dict, Any, Generator, List
 
 
 class Job:
@@ -8,18 +8,18 @@ class Job:
                  task_str: str,
                  start_at: datetime,
                  tries: int = 0,
-                 dependencies: Optional[list[str]] = None):
+                 dependencies: Optional[List['Job']] = None):
 
         self.start_at = start_at
         self.tries = tries
-        self.dependencies = dependencies if dependencies else None
+        self.dependencies = dependencies
         self.task = task
         self.task_str = task_str
         self.actual_tries: int = 0
 
     def run(self) -> Generator[None, None, None]:
         if self.check_run():
-            self.task()
+            self.task(None) # если я добавлю сюда в аргумент None, то получу TypeError: task_1() takes 0 positional arguments but 1 was given
             _ = (yield)
             yield True
 

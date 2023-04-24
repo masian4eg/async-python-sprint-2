@@ -1,6 +1,7 @@
 import logging
 import pickle
 from dataclasses import dataclass
+from typing import List
 
 from job import Job
 
@@ -17,7 +18,7 @@ class SchedulerStatus:
 class Scheduler:
     _file = 'jobs.lock'
     _status = SchedulerStatus
-    job_list: list[Job] = []
+    job_list: List['Job'] = []
 
     def __init__(self, pool_size: int = 10):
         self.pool_size = pool_size
@@ -26,8 +27,10 @@ class Scheduler:
     def schedule(self, job: Job) -> None:
         if not len(self.job_list) >= self.pool_size:
             self.job_list.append(job)
+            if job.dependencies:
+                self.job_list = job.dependencies + self.job_list
         else:
-            logging.warning('Задача не добавлена')
+            logging.warning('Task not added')
 
     def run(self) -> None:
         self.status = self._status.STATE_RUNNING
@@ -67,4 +70,4 @@ class Scheduler:
             with open(self._file, 'rb') as config_dictionary_file:
                 self.job_list = pickle.load(config_dictionary_file)
         except FileNotFoundError as error:
-            logging.error(f'Не найден файл восстановления, {error=}')
+            logging.error(f'Recovery file not found, {error=}')
