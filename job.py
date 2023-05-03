@@ -19,7 +19,7 @@ class Job:
 
     def run(self) -> Generator[None, None, None]:
         if self.check_run():
-            self.task() # если я добавлю сюда в аргумент None, то получу TypeError: task_1() takes 0 positional arguments but 1 was given
+            self.task()
             _ = (yield)
             yield True
 
